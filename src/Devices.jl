@@ -272,6 +272,10 @@ export Microwave,
     radialstub!
 
 include("backends/gds.jl")
+import .GDS:
+    save_gds,
+    load_gds
+export save_gds,load_gds
 include("backends/graphics.jl")
 
 include("lcdfonts.jl")
