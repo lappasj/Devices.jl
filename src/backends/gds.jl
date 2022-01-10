@@ -446,7 +446,7 @@ gdsend(io::IO) = gdswrite(io, ENDLIB)
 
 """
     save(::Union{AbstractString,IO}, cell0::Cell{T}, cell::Cell...)
-    save(f::File{format"GDS"}, cell0::Cell, cell::Cell...;
+    save_gds(f::String, cell0::Cell, cell::Cell...;
         name="GDSIILIB", userunit=1μm, modify=now(), acc=now(),
         verbose=false)
 This bottom method is implicitly called when you use the convenient syntax of
@@ -462,12 +462,12 @@ Keyword arguments include:
   - `verbose`: monitor the output of [`traverse!`](@ref) and [`order!`](@ref) to see if
     something funny is happening while saving.
 """
-function save(f::File{format"GDS"}, cell0::Cell, cell::Cell...;
+function save_gds(f::String, cell0::Cell, cell::Cell...;
         name="GDSIILIB", userunit=1μm, modify=now(), acc=now(), verbose=false)
     dbs = dbscale(cell0, cell...)
     pad = mod(length(name), 2) == 1 ? "\0" : ""
     open(f, "w") do s
-        io = stream(s)
+        io = s
         bytes = 0
         bytes += write(io, magic(format"GDS"))
         bytes += write(io, 0x02, 0x58)
@@ -496,7 +496,7 @@ function save(f::File{format"GDS"}, cell0::Cell, cell::Cell...;
 end
 
 """
-    load(f::File{format"GDS"}; verbose::Bool=false, nounits::Bool=false)
+    load_gds(f::String; verbose::Bool=false, nounits::Bool=false)
 A dictionary of top-level cells (`Cell` objects) found in the GDS-II file is
 returned. The dictionary keys are the cell names. The other cells in the GDS-II
 file are retained by `CellReference` or `CellArray` objects held by the
@@ -526,7 +526,7 @@ GDS-II record types, but also BGNLIB and LIBNAME).
 If `nounits` is true, `Cell{Float64}` objects will be returned, where 1.0
 corresponds to one micron.
 """
-function load(f::File{format"GDS"}; verbose::Bool=false, nounits::Bool=false)
+function load_gds(f::String; verbose::Bool=false, nounits::Bool=false)
     cells = Dict{String, Cell}()
     open(f) do s
         # Skip over GDS-II header record
